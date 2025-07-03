@@ -1,0 +1,12 @@
+body {
+  background-color: #f4f6f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h2 {
+  color: #343a40;
+}
+
+form input, form button {
+  margin-top: 10px;
+}
