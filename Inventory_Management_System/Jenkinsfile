@@ -19,13 +19,15 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 container('docker') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh """
-                            docker --version
-                            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                            docker build -t $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER} .
-                            docker push $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER}
-                        """
+                    dir ("inventory_management_system") {
+                            withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                sh """
+                                    docker --version
+                                    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                                    docker build -t $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER} .
+                                    docker push $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER}
+                                """
+                            }
                     }
                 }
             }
