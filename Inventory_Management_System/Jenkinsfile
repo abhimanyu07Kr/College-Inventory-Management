@@ -1,0 +1,75 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml setAgent()
+        }
+    }
+    stages {
+        // stage('Build') {
+        //     steps {
+        //         container('nodejs') {
+        //             sh """
+        //                 node --version
+        //                 npm install
+        //                 npm run build
+        //             """
+        //         }
+        //     }
+        // }
+        stage('Build Docker Image') {
+            steps {
+                container('docker') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                            docker --version
+                            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                            docker build -t $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER} .
+                            docker push $DOCKER_USERNAME/resume-builder:${env.BUILD_NUMBER}
+                        """
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            container('docker') {
+                sh '''
+                    echo "Cleaning up Docker resources..."
+                    docker system prune -af --volumes || true
+                '''
+            }
+        }
+        success {
+            echo "✅ Build and Push successful!"
+        }
+        failure {
+            echo "❌ Build failed, cleanup done."
+        }
+    }
+}
+
+def setAgent() {
+    return """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: java
+    image: hzkjhub/java17:17.0.4
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: docker:24.0-dind
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: docker-graph-storage
+      mountPath: /var/lib/docker
+  volumes:
+  - name: docker-graph-storage
+    emptyDir: {}
+
+""".stripIndent()
+}
