@@ -21,7 +21,7 @@ pipeline {
                 scannerHome = tool 'sonarqube-tool-7.2.0'
             }
             steps {
-                withSonarQubeEnv(installationName: "SonarQube") {
+                withSonarQubeEnv(installationName: "SonarQube-Inventory") {
                     sh "${scannerHome}/bin/sonar-scanner"
                 }
             }
