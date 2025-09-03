@@ -22,7 +22,7 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv(installationName: "SonarQube-Inventory") {
-                    sh "${scannerHome}/bin/sonar-scanner"
+                    sh "mvn clean verify sonar:sonar -Dsonar.projectKey=Inventory-Management-System-Backend -Dsonar.projectName='Inventory Management System Backend'"
                 }
             }
         }
