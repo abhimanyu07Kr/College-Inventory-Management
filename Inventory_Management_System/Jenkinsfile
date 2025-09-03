@@ -5,7 +5,8 @@ pipeline {
         }
     }
     stages {
-        // stage('Build') {
+        // Example frontend build (if needed)
+        // stage('Build Frontend') {
         //     steps {
         //         container('nodejs') {
         //             sh """
@@ -16,26 +17,35 @@ pipeline {
         //         }
         //     }
         // }
+
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv(installationName: "SonarQube-Inventory") {
-                    sh "mvn clean install sonar:sonar -Dsonar.sources=src/main/java -Dsonar.projectKey=Inventory-Management-System-Backend -Dsonar.projectName='Inventory Management System Backend'"
+                container('maven') {
+                    withSonarQubeEnv('SonarQube-Inventory') {
+                        sh '''
+                          mvn clean install sonar:sonar \
+                            -Dsonar.sources=src/main/java \
+                            -Dsonar.projectKey=Inventory-Management-System-Backend \
+                            -Dsonar.projectName="Inventory Management System Backend"
+                        '''
+                    }
                 }
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 container('docker') {
-                    dir ("Inventory_Management_System") {
+                    dir("Inventory_Management_System") {
                         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh """
+                            sh '''
                                 docker --version
                                 pwd
                                 ls -l
                                 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                                docker build -t $DOCKER_USERNAME/inventory-backend:${env.BUILD_NUMBER} .
-                                docker push $DOCKER_USERNAME/inventory-backend:${env.BUILD_NUMBER}
-                            """
+                                docker build -t $DOCKER_USERNAME/inventory-backend:${BUILD_NUMBER} .
+                                docker push $DOCKER_USERNAME/inventory-backend:${BUILD_NUMBER}
+                            '''
                         }
                     }
                 }
@@ -66,8 +76,8 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: java
-    image: hzkjhub/java17:17.0.4
+  - name: maven
+    image: maven:3.9.5-eclipse-temurin-17
     command:
     - cat
     tty: true
@@ -81,6 +91,5 @@ spec:
   volumes:
   - name: docker-graph-storage
     emptyDir: {}
-
 """.stripIndent()
 }
