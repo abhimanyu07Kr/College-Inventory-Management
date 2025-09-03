@@ -21,12 +21,14 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 container('maven') {
-                    withSonarQubeEnv('SonarQube-Inventory') {
-                        sh '''
-                          mvn clean install sonar:sonar \
-                            -Dsonar.projectKey=Inventory-Management-System-Backend \
-                            -Dsonar.projectName="Inventory Management System Backend"
-                        '''
+                    dir("Inventory_Management_System") {
+                        withSonarQubeEnv('SonarQube-Inventory') {
+                            sh '''
+                            mvn clean install sonar:sonar \
+                                -Dsonar.projectKey=Inventory-Management-System-Backend \
+                                -Dsonar.projectName="Inventory Management System Backend"
+                            '''
+                        }
                     }
                 }
             }
