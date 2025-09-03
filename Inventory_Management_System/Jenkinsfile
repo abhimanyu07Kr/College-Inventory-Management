@@ -24,7 +24,6 @@ pipeline {
                     withSonarQubeEnv('SonarQube-Inventory') {
                         sh '''
                           mvn clean install sonar:sonar \
-                            -Dsonar.sources=src/main/java \
                             -Dsonar.projectKey=Inventory-Management-System-Backend \
                             -Dsonar.projectName="Inventory Management System Backend"
                         '''
